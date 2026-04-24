@@ -9,15 +9,17 @@ workflows:
         NDK_HOME: /usr/local/lib/android/sdk/ndk/27.0.12077973
       node: latest
     scripts:
+      - name: Find sdkmanager
+        script: |
+          find / -name "sdkmanager" 2>/dev/null
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          ls $ANDROID_SDK_ROOT || echo "SDK dir not found"
+
       - name: Install Rust
         script: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
           source $HOME/.cargo/env
           rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
-
-      - name: Install NDK
-        script: |
-          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "ndk;27.0.12077973"
 
       - name: Install dependencies
         script: npm install
