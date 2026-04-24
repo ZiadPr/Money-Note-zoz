@@ -51,7 +51,7 @@ export function StartupSplash({ children }: { children: React.ReactNode }) {
     <>
       {showSplash && (
         <div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-[#737a78] px-6 text-white"
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-transparent px-6 text-foreground"
           aria-label="شاشة بدء التطبيق"
           role="img"
         >
