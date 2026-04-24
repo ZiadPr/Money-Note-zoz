@@ -32,9 +32,10 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     syncState();
 
-    const handleLifecycleLock = () => {
+    const handleLifecycleLock = (event?: Event) => {
       const settings = getSecuritySettings();
-      if (document.hidden && settings.pinEnabled && settings.lockOnBackground) {
+      const shouldLock = document.hidden || event?.type === "pagehide";
+      if (shouldLock && settings.pinEnabled && settings.lockOnBackground) {
         lockAppSession();
       }
     };
