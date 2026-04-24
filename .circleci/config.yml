@@ -10,31 +10,32 @@ jobs:
       - run:
           name: Setup Environment
           command: |
-            # تحديث المستودعات وتثبيت الجافا
             sudo apt-get update
             sudo apt-get install -y openjdk-17-jdk
-            
-            # تثبيت CLI الخاص بـ Tauri مع صلاحيات الـ root
+            # تثبيت الـ CLI عالمياً كاحتياط
             sudo npm install -g @tauri-apps/cli
 
       - run:
-          name: Install Project Dependencies
+          name: Install Project Dependencies (Fix Native Bindings)
           command: |
-            # تثبيت مكتبات المشروع
-            sudo npm install --unsafe-perm
+            # حل مشكلة Cannot find native binding
+            # مسح الملفات القديمة لضمان تثبيت نظيف
+            rm -rf node_modules package-lock.json
+            
+            # إعادة التثبيت مع إجبار npm على تحميل ملفات Linux x64
+            sudo npm install --include=optional --platform=linux --arch=x64
 
       - run:
           name: Build Signed APK
           command: |
-            # إعداد متغيرات البيئة الخاصة بالتوقيع
-            # تأكد أن ملف my-release-key.keystore موجود في المجلد الرئيسي للمشروع
+            # إعداد متغيرات البيئة
             export TAURI_ANDROID_KEYSTORE_PATH="$CIRCLE_WORKING_DIRECTORY/my-release-key.keystore"
             export TAURI_ANDROID_KEYSTORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD
             export TAURI_ANDROID_KEY_ALIAS=$ANDROID_KEY_ALIAS
             export TAURI_ANDROID_KEY_PASSWORD=$ANDROID_KEY_PASSWORD
             
-            # البدء في عملية بناء الـ APK للنسخة النهائية
-            sudo npm run tauri android build -- --apk --release
+            # استخدام tauri cli مباشرة من النظام لتجنب مشاكل node_modules المحلية
+            sudo tauri android build --apk --release
 
       - store_artifacts:
           path: src-tauri/gen/android/app/build/outputs/apk/release/
