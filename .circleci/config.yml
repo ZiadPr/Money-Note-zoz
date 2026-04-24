@@ -89,8 +89,8 @@ jobs:
       - run:
           name: Accept Android SDK licenses and install NDK
           command: |
-            yes | sdkmanager --licenses > /dev/null 2>&1 || true
-            yes | sdkmanager "ndk;26.1.10909125" > /dev/null 2>&1
+            yes | sdkmanager --licenses || true
+            yes | sdkmanager "ndk;26.1.10909125"
             echo 'export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125' >> "$BASH_ENV"
             echo 'export NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125'         >> "$BASH_ENV"
       - run:
