@@ -28,21 +28,36 @@ function fingerprintRaw(): string {
 }
 
 async function sha256Hex(input: string): Promise<string> {
-  const buf = new TextEncoder().encode(input);
-  const h = await crypto.subtle.digest("SHA-256", buf);
-  const bytes = new Uint8Array(h);
-  let out = "";
-  for (let i = 0; i < bytes.length; i++) {
-    out += bytes[i].toString(16).padStart(2, "0");
+  // crypto.subtle يشتغل بس في Secure Context (HTTPS أو localhost)
+  if (crypto?.subtle) {
+    const buf = new TextEncoder().encode(input);
+    const h = await crypto.subtle.digest("SHA-256", buf);
+    const bytes = new Uint8Array(h);
+    let out = "";
+    for (let i = 0; i < bytes.length; i++) {
+      out += bytes[i].toString(16).padStart(2, "0");
+    }
+    return out;
   }
-  return out;
+
+  // fallback: hash بسيط لو مش في Secure Context (مثلاً HTTP على IP)
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash |= 0; // تحويل لـ 32-bit integer
+  }
+  const h = Math.abs(hash).toString(16).padStart(8, "0");
+  return (h + h + h + h).slice(0, 32); // 32 حرف hex
 }
 
 export async function getDeviceUid(): Promise<string> {
   const cached = localStorage.getItem(KEY);
   if (cached) return cached;
+
   const fp = fingerprintRaw();
   const hex = await sha256Hex(fp);
+
   // تنسيق ثلاثي مرئي: MN-XXXX-XXXX-XXXX-XXXX
   const id =
     "MN-" +
@@ -53,6 +68,7 @@ export async function getDeviceUid(): Promise<string> {
     hex.slice(8, 12).toUpperCase() +
     "-" +
     hex.slice(12, 16).toUpperCase();
+
   localStorage.setItem(KEY, id);
   return id;
 }

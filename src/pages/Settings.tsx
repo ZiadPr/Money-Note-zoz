@@ -20,10 +20,11 @@ import {
   Timer,
   Trash2,
   Upload,
+  Users,
+  type LucideIcon,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { AppHeader } from "@/components/AppHeader";
-import { Card } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +56,7 @@ import {
 } from "@/lib/qr-payload";
 import { clearJoinSession, getJoinSession } from "@/lib/join-session";
 import { formatDateTime, shortId } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import {
   changePin,
   disablePin,
@@ -323,6 +325,16 @@ export default function Settings() {
     navigate("/", { replace: true });
   };
 
+  const accountBadge = identityVerified ? "موثّق" : "غير موثّق";
+  const deepConfirmBadge = joinSession ? "جلسة نشطة" : `${remaining}ث`;
+  const securityBadge = securitySettings.pinEnabled ? "PIN مفعّل" : "بدون PIN";
+  const lockOnBackgroundEnabled = securitySettings.pinEnabled && securitySettings.lockOnBackground;
+  const associationsBadge = `${associationsCount.all} جمعية`;
+  const backupBadge = "ملفات محلية";
+  const developerBadge = "روابط مباشرة";
+  const aboutBadge = "v3.0";
+  const dangerBadge = "نهائي";
+
   if (!identity || !identityQr) {
     return (
       <AppShell>
@@ -336,9 +348,9 @@ export default function Settings() {
       <AppHeader title="الإعدادات" />
 
       <div className="p-4 animate-fade-in">
-        <Accordion type="multiple" defaultValue={["account"]} className="space-y-3">
-        <Section value="account" title="الحساب الشخصي" summary="الهوية الشخصية و QR الثابت وبيانات الجهاز">
-          <Card className="p-4 space-y-4">
+        <Accordion type="multiple" defaultValue={[]} className="space-y-3">
+          <Section value="account" title="الحساب الشخصي" summary="الهوية الشخصية و QR الثابت وبيانات الجهاز" icon={Cpu} badge={accountBadge} badgeTone={identityVerified ? "success" : "warning"}>
+            <SettingsBlock className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="size-12 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow shrink-0">
                 <span className="text-lg font-extrabold text-primary-foreground">{identity.name.slice(0, 2)}</span>
@@ -346,7 +358,7 @@ export default function Settings() {
 
               <div className="flex-1 min-w-0">
                 {editing ? (
-                  <div className="flex gap-1.5">
+                  <div className="flex flex-col sm:flex-row gap-1.5">
                     <Input value={name} onChange={(event) => setName(event.target.value)} className="bg-background/50 h-9" />
                     <Button size="sm" onClick={saveName} className="bg-gradient-primary">
                       حفظ
@@ -373,7 +385,7 @@ export default function Settings() {
               </div>
             </div>
 
-            <div className="flex flex-col items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+            <SettingsBlock className="flex flex-col items-center gap-3 border-primary/20 bg-primary/5">
               <div className="inline-flex items-center gap-2 text-sm font-semibold">
                 <QrCode className="size-4 text-primary" />
                 QR الشخصي الثابت
@@ -382,9 +394,9 @@ export default function Settings() {
               <p className="text-xs text-muted-foreground text-center">
                 هذا هو QR الذي يمسحه المدير لبدء إضافتك إلى أي جمعية.
               </p>
-            </div>
+            </SettingsBlock>
 
-            <div className="rounded-lg bg-secondary/40 p-2.5 flex items-center gap-2">
+            <SettingsBlock className="flex items-center gap-2 p-2.5">
               <Cpu className="size-4 text-primary shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] text-muted-foreground">UID الجهاز (ثابت)</p>
@@ -398,12 +410,12 @@ export default function Settings() {
               >
                 <Copy className="size-3.5 text-muted-foreground" />
               </button>
-            </div>
-          </Card>
-        </Section>
+            </SettingsBlock>
+            </SettingsBlock>
+          </Section>
 
-        <Section value="deep-confirm" title="تأكيد العمليات العميقة" summary="باركود التحقق الدوري والتأكيد العكسي لجلسات الانضمام">
-          <Card className="card-elevated p-5 border-primary/30 flex flex-col items-center gap-3">
+          <Section value="deep-confirm" title="تأكيد العمليات العميقة" summary="باركود التحقق الدوري والتأكيد العكسي لجلسات الانضمام" icon={ShieldCheck} badge={deepConfirmBadge} badgeTone={joinSession ? "warning" : "default"}>
+            <SettingsBlock className="card-elevated border-primary/30 flex flex-col items-center gap-3 p-5">
             {deepQr && <QRDisplay value={deepQr} size={180} />}
             <div className="flex items-center gap-2 text-sm">
               <Timer className={`size-4 ${remaining <= 5 ? "text-destructive animate-pulse" : "text-primary"}`} />
@@ -446,11 +458,11 @@ export default function Settings() {
                 </p>
               </div>
             )}
-          </Card>
-        </Section>
+            </SettingsBlock>
+          </Section>
 
-        <Section value="security" title="الأمان والحماية" summary="PIN المحلي وسجل عمليات الأمان وخيارات القفل">
-          <Card className="p-4 space-y-4">
+          <Section value="security" title="الأمان والحماية" summary="PIN المحلي وسجل عمليات الأمان وخيارات القفل" icon={LockKeyhole} badge={securityBadge} badgeTone={securitySettings.pinEnabled ? "success" : "default"}>
+            <SettingsBlock className="space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
                 <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -468,15 +480,22 @@ export default function Settings() {
               </span>
             </div>
 
-            <div className="rounded-xl border border-border/50 bg-secondary/20 p-3 flex items-center justify-between gap-3">
+            <div
+              className={cn(
+                "rounded-xl border border-border/50 bg-secondary/20 p-3 flex items-center justify-between gap-3 transition-opacity",
+                !securitySettings.pinEnabled && "opacity-60"
+              )}
+            >
               <div>
                 <p className="text-sm font-semibold">القفل عند مغادرة التطبيق</p>
                 <p className="text-[11px] text-muted-foreground mt-1">
-                  عند الرجوع إلى التطبيق سيُطلب رمز PIN مرة أخرى.
+                  {securitySettings.pinEnabled
+                    ? "عند الرجوع إلى التطبيق سيُطلب رمز PIN مرة أخرى."
+                    : "يتفعّل هذا الخيار بعد تفعيل رمز PIN أولًا."}
                 </p>
               </div>
               <Switch
-                checked={securitySettings.lockOnBackground}
+                checked={lockOnBackgroundEnabled}
                 onCheckedChange={toggleLockOnBackground}
                 disabled={!securitySettings.pinEnabled}
               />
@@ -532,9 +551,9 @@ export default function Settings() {
                 غير متاحين في نسخة الويب الحالية. عند تغليف التطبيق كتطبيق جوال أصلي يمكن ربطهما لاحقًا.
               </p>
             </div>
-          </Card>
+            </SettingsBlock>
 
-          <Card className="p-4">
+            <SettingsBlock>
             <button onClick={loadLogs} className="w-full flex items-center justify-between text-sm">
               <span className="flex items-center gap-2">
                 <ShieldCheck className="size-4 text-primary" />
@@ -560,11 +579,11 @@ export default function Settings() {
                 )}
               </div>
             )}
-          </Card>
-        </Section>
+            </SettingsBlock>
+          </Section>
 
-        <Section value="associations" title="الجمعيات" summary="ملخص جمعياتك وروابط الفتح والإعدادات السريعة">
-          <Card className="p-4 space-y-3">
+          <Section value="associations" title="الجمعيات" summary="ملخص جمعياتك وروابط الفتح والإعدادات السريعة" icon={Users} badge={associationsBadge}>
+            <SettingsBlock className="space-y-3">
             <div className="grid grid-cols-3 gap-2 text-center">
               <MiniStat label="الكل" value={String(associationsCount.all)} />
               <MiniStat label="مدير" value={String(associationsCount.manager)} />
@@ -628,15 +647,15 @@ export default function Settings() {
             <Button variant="outline" onClick={() => navigate("/associations")} className="w-full">
               فتح قائمة الجمعيات
             </Button>
-          </Card>
-        </Section>
+            </SettingsBlock>
+          </Section>
 
-        <Section value="backup" title="النسخ الاحتياطي والاستيراد" summary="تصدير البيانات المحلية أو استيراد نسخة محفوظة">
-          <Card className="p-4 space-y-3">
+          <Section value="backup" title="النسخ الاحتياطي والاستيراد" summary="تصدير البيانات المحلية أو استيراد نسخة محفوظة" icon={Download} badge={backupBadge}>
+            <SettingsBlock className="space-y-3">
             <p className="text-xs text-muted-foreground">
               احفظ بياناتك محليًا أو استعدها من ملف. الملف يحتوي على هويتك وجمعياتك وسجلاتك.
             </p>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Button onClick={exportBackup} variant="outline" className="flex-1">
                 <Download className="size-4 me-2" />
                 تصدير
@@ -656,11 +675,11 @@ export default function Settings() {
                 </Button>
               </label>
             </div>
-          </Card>
-        </Section>
+            </SettingsBlock>
+          </Section>
 
-        <Section value="developer" title="التواصل والدعم" summary="بيانات المطور وروابط التواصل والدعم المالي">
-          <Card className="p-4 space-y-3">
+          <Section value="developer" title="التواصل والدعم" summary="بيانات المطور وروابط التواصل والدعم المالي" icon={Phone} badge={developerBadge}>
+            <SettingsBlock className="space-y-3">
             <div className="space-y-1">
               <p className="font-bold">ذياد يحيى زكريا أحمد</p>
               <p className="text-xs text-muted-foreground">مطوّر موني نوت</p>
@@ -680,9 +699,9 @@ export default function Settings() {
                 <span>ziadyahyazakaria@gmail.com</span>
               </a>
             </div>
-          </Card>
+            </SettingsBlock>
 
-          <Card className="p-4 mt-3 border-accent/30 bg-accent/5">
+            <SettingsBlock className="border-accent/30 bg-accent/5">
             <div className="flex items-start gap-3">
               <div className="size-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow shrink-0">
                 <Heart className="size-5 text-primary-foreground" />
@@ -705,11 +724,11 @@ export default function Settings() {
                 دعم عبر InstaPay
               </Button>
             </a>
-          </Card>
-        </Section>
+            </SettingsBlock>
+          </Section>
 
-        <Section value="about" title="عن التطبيق" summary="الإصدار الحالي ووصف مختصر لفكرة موني نوت">
-          <Card className="p-4 border-border/50">
+          <Section value="about" title="عن التطبيق" summary="الإصدار الحالي ووصف مختصر لفكرة موني نوت" icon={Info} badge={aboutBadge}>
+            <SettingsBlock>
             <div className="flex gap-2">
               <Info className="size-4 text-primary shrink-0 mt-0.5" />
               <div className="text-xs text-muted-foreground space-y-1">
@@ -720,11 +739,11 @@ export default function Settings() {
                 <p>هويتك في جهازك، جمعيتك في جيبك، وكل قسط موثّق حتى لو الدنيا بعيدة.</p>
               </div>
             </div>
-          </Card>
-        </Section>
+            </SettingsBlock>
+          </Section>
 
-        <Section value="danger" title="منطقة الخطر" summary="مسح كل بيانات هذا الجهاز نهائيًا دون إمكانية التراجع">
-          <Card className="p-4 border-destructive/30 bg-destructive/5">
+          <Section value="danger" title="منطقة الخطر" summary="مسح كل بيانات هذا الجهاز نهائيًا دون إمكانية التراجع" icon={Trash2} badge={dangerBadge} badgeTone="danger">
+            <SettingsBlock className="border-destructive/30 bg-destructive/5">
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" className="w-full">
@@ -747,8 +766,8 @@ export default function Settings() {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-          </Card>
-        </Section>
+            </SettingsBlock>
+          </Section>
         </Accordion>
       </div>
     </AppShell>
@@ -759,25 +778,63 @@ function Section({
   value,
   title,
   summary,
+  icon: Icon,
+  badge,
+  badgeTone = "default",
   children,
 }: {
   value: string;
   title: string;
   summary: string;
+  icon: LucideIcon;
+  badge?: string;
+  badgeTone?: "default" | "success" | "warning" | "danger";
   children: React.ReactNode;
 }) {
   return (
-    <AccordionItem value={value} className="rounded-2xl border border-border/50 bg-card px-4">
+    <AccordionItem value={value} className="overflow-hidden rounded-2xl border border-border/50 bg-card px-4 data-[state=open]:shadow-sm">
       <AccordionTrigger className="py-4 hover:no-underline">
-        <div className="text-start">
-          <p className="text-sm font-bold">{title}</p>
-          <p className="text-[11px] text-muted-foreground mt-1">{summary}</p>
+        <div className="flex flex-1 items-center gap-3 text-start">
+          <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Icon className="size-4 text-primary" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-bold">{title}</p>
+            <p className="text-[11px] text-muted-foreground mt-1">{summary}</p>
+          </div>
+          {badge && (
+            <span
+              className={cn(
+                "shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold border",
+                badgeTone === "success" && "bg-success/10 text-success border-success/20",
+                badgeTone === "warning" && "bg-warning/10 text-warning border-warning/30",
+                badgeTone === "danger" && "bg-destructive/10 text-destructive border-destructive/20",
+                badgeTone === "default" && "bg-secondary/50 text-muted-foreground border-border/50"
+              )}
+            >
+              {badge}
+            </span>
+          )}
         </div>
       </AccordionTrigger>
       <AccordionContent className="pb-4">
         <div className="space-y-3">{children}</div>
       </AccordionContent>
     </AccordionItem>
+  );
+}
+
+function SettingsBlock({
+  className,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={cn("rounded-2xl border border-border/50 bg-secondary/20 p-4", className)}>
+      {children}
+    </div>
   );
 }
 
