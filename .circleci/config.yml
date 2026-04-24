@@ -3,41 +3,45 @@ version: 2.1
 jobs:
   build-android:
     docker:
-      # استخدمنا نسخة 1.81 لضمان دعم Cargo.lock v4 ودعم Tauri 2
-      - image: cimg/rust:1.81.0-node
+      - image: cimg/node:20.0
     steps:
       - checkout
       
       - run:
           name: Setup Environment
           command: |
+            # تحديث المستودعات وتثبيت الجافا
             sudo apt-get update
             sudo apt-get install -y openjdk-17-jdk
-            # تثبيت الـ CLI الخاص بـ Tauri
-            npm install -g @tauri-apps/cli
             
+            # تثبيت CLI الخاص بـ Tauri مع صلاحيات الـ root
+            sudo npm install -g @tauri-apps/cli
+
       - run:
-          name: Install Dependencies
-          command: npm install
+          name: Install Project Dependencies
+          command: |
+            # تثبيت مكتبات المشروع
+            sudo npm install --unsafe-perm
 
       - run:
           name: Build Signed APK
           command: |
-            # تحميل الـ SDK الخاص بالأندرويد أوتوماتيكياً بواسطة Tauri
-            # المتغيرات دي CircleCI هيسحبها من الـ Environment Variables اللي إنت ضفتها
-            export TAURI_ANDROID_KEYSTORE_PATH="/home/circleci/project/my-release-key.keystore"
+            # إعداد متغيرات البيئة الخاصة بالتوقيع
+            # تأكد أن ملف my-release-key.keystore موجود في المجلد الرئيسي للمشروع
+            export TAURI_ANDROID_KEYSTORE_PATH="$CIRCLE_WORKING_DIRECTORY/my-release-key.keystore"
             export TAURI_ANDROID_KEYSTORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD
             export TAURI_ANDROID_KEY_ALIAS=$ANDROID_KEY_ALIAS
             export TAURI_ANDROID_KEY_PASSWORD=$ANDROID_KEY_PASSWORD
             
-            # أمر البناء النهائي
-            npm run tauri android build -- --apk --release
+            # البدء في عملية بناء الـ APK للنسخة النهائية
+            sudo npm run tauri android build -- --apk --release
 
       - store_artifacts:
-          path: src-tauri/gen/android/app/build/outputs/apk/release
-          destination: final-builds
+          path: src-tauri/gen/android/app/build/outputs/apk/release/
+          destination: apks
 
 workflows:
-  tauri-build-pipeline:
+  version: 2
+  build:
     jobs:
       - build-android
