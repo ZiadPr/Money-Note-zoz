@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* موني نوت — نظام التصميم البنفسجي الليلي */
+@layer base {
+  :root {
+    /* الخلفيات */
+    --background: 240 53% 6%;          /* #0a0a1a */
+    --foreground: 230 30% 95%;
+
+    --surface: 240 52% 14%;            /* #141432 */
+    --surface-elevated: 240 50% 18%;
+
+    --card: 240 52% 11%;
+    --card-foreground: 230 30% 95%;
+
+    --popover: 240 52% 11%;
+    --popover-foreground: 230 30% 95%;
+
+    /* البنفسجي الإلكتروني */
+    --primary: 239 84% 60%;            /* #4f46e5 */
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 250 95% 70%;
+
+    --secondary: 240 60% 24%;          /* #1e1e5a */
+    --secondary-foreground: 230 30% 95%;
+
+    --muted: 240 30% 18%;
+    --muted-foreground: 240 15% 65%;
+
+    --accent: 250 95% 70%;
+    --accent-foreground: 240 53% 6%;
+
+    --destructive: 0 75% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 70% 50%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 95% 60%;
+    --warning-foreground: 240 53% 6%;
+
+    --border: 240 40% 22%;
+    --input: 240 40% 18%;
+    --ring: 239 84% 60%;
+
+    --radius: 1rem;
+
+    /* تدرجات وتأثيرات */
+    --gradient-primary: linear-gradient(135deg, hsl(239 84% 60%), hsl(265 85% 65%));
+    --gradient-surface: linear-gradient(180deg, hsl(240 52% 11%), hsl(240 53% 8%));
+    --gradient-glow: radial-gradient(circle at 50% 0%, hsl(239 84% 60% / 0.25), transparent 70%);
+
+    --shadow-glow: 0 10px 40px -10px hsl(239 84% 60% / 0.5);
+    --shadow-elevated: 0 8px 24px -8px hsl(240 80% 5% / 0.6);
+    --shadow-card: 0 4px 16px -4px hsl(240 80% 5% / 0.4);
+
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* sidebar (غير مستخدم لكنه مطلوب) */
+    --sidebar-background: 240 52% 11%;
+    --sidebar-foreground: 230 30% 95%;
+    --sidebar-primary: 239 84% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 40% 18%;
+    --sidebar-accent-foreground: 230 30% 95%;
+    --sidebar-border: 240 40% 22%;
+    --sidebar-ring: 239 84% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html, body {
+    @apply bg-background text-foreground;
+    font-family: 'Cairo', 'Tajawal', system-ui, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+  }
+
+  body {
+    background-image: var(--gradient-glow);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  /* تحسين الأرقام العربية */
+  .num-en {
+    font-feature-settings: "tnum";
+    direction: ltr;
+    display: inline-block;
+  }
+
+  /* إخفاء scrollbar في الموبايل */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+@layer components {
+  .glow-purple {
+    box-shadow: var(--shadow-glow);
+  }
+  .card-elevated {
+    background: var(--gradient-surface);
+    box-shadow: var(--shadow-card);
+  }
+  .gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+@layer utilities {
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  .safe-top { padding-top: env(safe-area-inset-top); }
+}
