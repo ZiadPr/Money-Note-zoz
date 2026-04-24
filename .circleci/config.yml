@@ -10,14 +10,15 @@ jobs:
       - run:
           name: Install Rust and Android NDK
           command: |
-            # 1. تثبيت Rust (سيقوم بالتأكد من وجوده)
+            # 1. تثبيت Rust
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
             source $HOME/.cargo/env
             rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
             
-            # 2. تثبيت الـ NDK (بدون استخدام --quiet لتجنب الخطأ)
-            # تم استخدام المسار المباشر للأمر لضمان العمل
-            yes | sdkmanager "ndk;26.1.10909125"
+            # 2. تثبيت الـ NDK بطريقة تمنع خطأ Pipe 141
+            # نقوم بقبول التراخيص أولاً ثم تثبيت الحزمة مع كتم المخرجات الزائدة
+            yes | sdkmanager --licenses > /dev/null
+            yes | sdkmanager "ndk;26.1.10909125" > /dev/null
             
             # تعريف المسارات للنظام
             echo 'export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125' >> $BASH_ENV
@@ -40,7 +41,7 @@ jobs:
             # تجهيز مجلد الأندرويد
             tauri android init --ci
             
-            # إعدادات التوقيع (تأكد من صحة أسماء المتغيرات في CircleCI)
+            # إعدادات التوقيع
             export TAURI_ANDROID_KEYSTORE_PATH="$CIRCLE_WORKING_DIRECTORY/my-release-key.keystore"
             export TAURI_ANDROID_KEYSTORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD
             export TAURI_ANDROID_KEY_ALIAS=$ANDROID_KEY_ALIAS
